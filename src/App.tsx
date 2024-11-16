@@ -59,7 +59,7 @@ function App() {
       type,
       timestamp: new Date(),
       description,
-      duration,
+      duration: duration ? duration : null,
       userId: user.uid
     };
 

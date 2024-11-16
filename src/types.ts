@@ -5,7 +5,7 @@ export interface Activity {
   type: ActivityType;
   timestamp: Date;
   description: string;
-  duration?: number; // Duration in minutes
+  duration: number | null; // Duration in minutes
   userId: string;
 }
 
