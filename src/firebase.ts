@@ -1,18 +1,23 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-import process from 'node:process'
 
-const firebaseConfig = {
-  apiKey: process.env.FB_apiKey,
-  authDomain: process.env.FB_authDomain,
-  projectId: process.env.FB_projectId,
-  storageBucket: process.env.FB_storageBucket,
-  messagingSenderId: process.env.FB_messagingSenderId,
-  appId: process.env.FB_appId,
-  measurementId: process.env.FB_measurementId
-};
+export function useDB() {
+  "use-server"
+  const firebaseConfig = {
+    apiKey: import.meta.env.FB_apiKey,
+    authDomain: import.meta.env.FB_authDomain,
+    projectId: import.meta.env.FB_projectId,
+    storageBucket: import.meta.env.FB_storageBucket,
+    messagingSenderId: import.meta.env.FB_messagingSenderId,
+    appId: import.meta.env.FB_appId,
+    measurementId: import.meta.env.FB_measurementId
+  };
+  return initializeApp(firebaseConfig);
+}
 
-const app = initializeApp(firebaseConfig);
+
+
+const app = useDB()
 export const auth = getAuth(app);
 export const db = getFirestore(app);
