@@ -3,13 +3,13 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: import.meta.env.FB_apiKey,
-  authDomain: import.meta.env.FB_authDomain,
-  projectId: import.meta.env.FB_projectId,
-  storageBucket: import.meta.env.FB_storageBucket,
-  messagingSenderId: import.meta.env.FB_messagingSenderId,
-  appId: import.meta.env.FB_appId,
-  measurementId: import.meta.env.FB_measurementId
+  apiKey: "AIzaSyBVuvHcJmBrkhy9hvx9ZIOPlHLRupqyq7M",
+  authDomain: "puppy-tracker-337fa.firebaseapp.com",
+  projectId: "puppy-tracker-337fa",
+  storageBucket: "puppy-tracker-337fa.firebasestorage.app",
+  messagingSenderId: "617665821592",
+  appId: "1:617665821592:web:7e136de8094f6ba5b089ed",
+  measurementId: "G-L8F93EXY2R"
 };
 
 
