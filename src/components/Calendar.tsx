@@ -1,8 +1,9 @@
-import React from 'react';
-import ReactCalendar from 'react-calendar';
+import ReactCalendar, { TileContentFunc } from 'react-calendar';
+import { useMemo } from 'react';
 import { format } from 'date-fns';
-import { Activity, ReadActivity } from '../types';
+import { ReadActivity } from '../types';
 import 'react-calendar/dist/Calendar.css';
+import { getActivityColor } from './activityUtils';
 
 interface CalendarViewProps {
   activities: { [date: string]: ReadActivity[] };
@@ -11,28 +12,31 @@ interface CalendarViewProps {
 }
 
 export default function CalendarView({ activities, onDateSelect, selectedDate }: CalendarViewProps) {
-  const tileContent = ({ date }: { date: Date }) => {
-    const dateStr = format(date, 'yyyy-MM-dd');
-    const dayActivities = activities[dateStr] || [];
-    
-    if (dayActivities.length === 0) return null;
+  const tileContent = useMemo<TileContentFunc>(
+    () => ({ date }) => {
+      const dateStr = format(date, 'yyyy-MM-dd');
+      const dayActivities = activities[dateStr] || [];
+      
+      if (dayActivities.length === 0) return null;
 
-    return (
-      <div className="text-xs mt-1">
-        <div className="flex gap-1 flex-wrap justify-center">
-          {Array.from(new Set(dayActivities.map(a => a.type))).map(type => (
-            <span
-              key={type}
-              className="w-2 h-2 rounded-full"
-              style={{
-                backgroundColor: getActivityColor(type)
-              }}
-            />
-          ))}
+      return (
+        <div className="text-xs mt-1">
+          <div className="flex gap-1 flex-wrap justify-center">
+            {Array.from(new Set(dayActivities.map(a => a.type))).map(type => (
+              <span
+                key={type}
+                className="w-2 h-2 rounded-full"
+                style={{
+                  backgroundColor: getActivityColor(type)
+                }}
+              />
+            ))}
+          </div>
         </div>
-      </div>
-    );
-  };
+      );
+    },
+    [activities]
+  );
 
   return (
     <div className="calendar-wrapper">
@@ -44,17 +48,4 @@ export default function CalendarView({ activities, onDateSelect, selectedDate }:
       />
     </div>
   );
-}
-
-function getActivityColor(type: Activity['type']): string {
-  switch (type) {
-    case 'meal': return '#EF4444';
-    case 'pee': return '#F59E0B';
-    case 'poop': return '#78350F';
-    case 'water': return '#3B82F6';
-    case 'medicine': return '#EC4899';
-    case 'walk': return '#10B981';
-    case 'training': return '#8B5CF6';
-    default: return '#6B7280';
-  }
 }

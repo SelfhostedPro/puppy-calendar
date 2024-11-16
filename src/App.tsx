@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { format } from 'date-fns';
 import { Dog } from 'lucide-react';
-import { collection, query, getDocs, addDoc, deleteDoc, doc, orderBy, Timestamp } from 'firebase/firestore';
-import { onAuthStateChanged } from 'firebase/auth';
+import { collection, query, getDocs, addDoc, deleteDoc, doc, orderBy, Timestamp, } from 'firebase/firestore';
+import { onAuthStateChanged, type User } from 'firebase/auth';
 import ActivityForm from './components/ActivityForm';
 import ActivityList from './components/ActivityList';
 import CalendarView from './components/Calendar';
@@ -14,22 +14,19 @@ function App() {
   const [activityLog, setActivityLog] = useState<ActivityLog>({});
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [user, setUser] = useState(auth.currentUser);
-  const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
-
-  const activityLogPath = user ? `users/${user.uid}/activityLog` : null;
+  const selectedDateStr = useMemo(() => format(selectedDate, 'yyyy-MM-dd'), [selectedDate]);
 
   useEffect(() => {
     const checkUserAndLoadActivities = async () => {
-      const currentUser = auth.currentUser;
-      setUser(currentUser);
-      if (currentUser) {
-        await loadActivities(currentUser.uid);
+      if (auth.currentUser) {
+        setUser(auth.currentUser);
+        await loadActivities(auth.currentUser.uid);
       }
     };
 
     checkUserAndLoadActivities();
 
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user: User | null) => {
       setUser(user);
       if (user) {
         loadActivities(user.uid);
@@ -73,10 +70,10 @@ function App() {
     } catch (error) {
       console.error("Error loading activities:", error);
     }
-  };
+  }
 
 
-  const handleAddActivity = async (type: ActivityType, description: string, duration: number | null) => {
+  const handleAddActivity = useCallback(async (type: ActivityType, description: string, duration: number | null) => {
     if (!user) return;
     const activityLogPath = `users/${user.uid}/activityLog`;
     const activitiesRef = collection(db, activityLogPath);
@@ -97,19 +94,19 @@ function App() {
       ...prev,
       [selectedDateStr]: [...(prev[selectedDateStr] || []), { ...activity, timestamp: activity.timestamp.toDate() }],
     }));
-  };
+  }, [user, selectedDateStr]);
 
-  const handleDeleteActivity = async (id: string) => {
+  const handleDeleteActivity = useCallback(async (id: string) => {
     if (!user) return;
     const activityLogPath = `users/${user.uid}/activityLog`;
-    const activitiesRef = collection(db, activityLogPath, id);
+    const activityDocRef = doc(db, activityLogPath, id);
 
-    await deleteDoc(doc(activitiesRef));
+    await deleteDoc(activityDocRef);
     setActivityLog((prev) => ({
       ...prev,
       [selectedDateStr]: prev[selectedDateStr].filter((activity) => activity.id !== id),
     }));
-  };
+  }, [user, selectedDateStr]);
 
   return (
     <div className="min-h-screen bg-gray-50">

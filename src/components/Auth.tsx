@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { auth } from '../firebase';
 import {
   createUserWithEmailAndPassword,
@@ -14,7 +14,7 @@ export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState('');
 
-  const handleAuth = async (e: React.FormEvent) => {
+  const handleAuth = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       if (isSignUp) {
@@ -26,13 +26,17 @@ export default function Auth() {
       setPassword('');
       setError('');
     } catch (err) {
-      setError(err.message);
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown error occurred');
+      }
     }
-  };
+  }, [isSignUp, email, password]);
 
-  const handleSignOut = () => {
+  const handleSignOut = useCallback(() => {
     signOut(auth);
-  };
+  }, []);
 
   if (auth.currentUser) {
     return (

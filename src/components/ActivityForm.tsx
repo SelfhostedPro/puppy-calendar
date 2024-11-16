@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { PlusCircle } from 'lucide-react';
 import { ActivityType } from '../types';
+import { format } from 'date-fns';
 
 interface ActivityFormProps {
-  onSubmit: (type: ActivityType, description: string, duration: number | null) => void;
+  onSubmit: (type: ActivityType, description: string, duration: number | null, time: string) => void;
 }
 
 export default function ActivityForm({ onSubmit }: ActivityFormProps) {
@@ -11,14 +12,19 @@ export default function ActivityForm({ onSubmit }: ActivityFormProps) {
   const [description, setDescription] = useState('');
   const [duration, setDuration] = useState<string>('');
 
+  const [time, setTime] = useState<string>('');
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(type, description, duration ? parseInt(duration) : null);
+    onSubmit(type, description, duration ? parseInt(duration) : null, time);
     setDescription('');
     setDuration('');
+    setTime('');
   };
 
-  const showDurationField = ['walk', 'training'].includes(type);
+  const currentTime = format(new Date(), 'MMMM dd, yyyy HH:MM'); // Default to current time
+
+  const showDurationField = useMemo(() => ['walk', 'training'].includes(type), [type]);
 
   return (
     <form onSubmit={handleSubmit} className="bg-white rounded-lg p-6 shadow-md">
@@ -43,6 +49,18 @@ export default function ActivityForm({ onSubmit }: ActivityFormProps) {
           </select>
         </div>
 
+        <div>
+          <label htmlFor="time" className="block text-sm font-medium text-gray-700">
+            Time
+          </label>
+          <input
+            type="time"
+            id="time"
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          />
+        </div>
         {showDurationField && (
           <div>
             <label htmlFor="duration" className="block text-sm font-medium text-gray-700">
