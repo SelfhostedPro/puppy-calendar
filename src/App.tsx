@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { Dog } from 'lucide-react';
-import { collection, query, where, getDocs, addDoc, deleteDoc, doc, orderBy } from 'firebase/firestore';
+import { collection, query, getDocs, addDoc, deleteDoc, doc, orderBy, Timestamp } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import ActivityForm from './components/ActivityForm';
 import ActivityList from './components/ActivityList';
 import CalendarView from './components/Calendar';
 import Auth from './components/Auth';
-import { Activity, ActivityType, ActivityLog } from './types';
+import { Activity, ActivityType, ActivityLog, ReadActivity } from './types';
 import { auth, db } from './firebase';
 
 function App() {
@@ -16,7 +16,19 @@ function App() {
   const [user, setUser] = useState(auth.currentUser);
   const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
 
+  const activityLogPath = user ? `users/${user.uid}/activityLog` : null;
+
   useEffect(() => {
+    const checkUserAndLoadActivities = async () => {
+      const currentUser = auth.currentUser;
+      setUser(currentUser);
+      if (currentUser) {
+        await loadActivities(currentUser.uid);
+      }
+    };
+
+    checkUserAndLoadActivities();
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       if (user) {
@@ -30,59 +42,69 @@ function App() {
   }, []);
 
   const loadActivities = async (userId: string) => {
-    const activitiesRef = collection(db, 'users', userId, 'activityLog');
+    try {
+      const activitiesRef = collection(db, 'users', userId, 'activityLog');
+      const q = query(activitiesRef, orderBy('timestamp', 'desc'));
+      const querySnapshot = await getDocs(q);
 
-    // const activitiesRef = collection(db, 'activities');
-    const q = query(activitiesRef, orderBy('createdAt', 'desc'));
+      const activities: ActivityLog = {};
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
 
+        if (!data.timestamp) {
+          console.warn("Missing timestamp in document:", doc.id);
+          return;
+        }
 
+        const activity = {
+          ...data,
+          id: doc.id,
+          timestamp: data.timestamp.toDate() // Convert Firestore Timestamp to Date
+        } as ReadActivity;
 
-    // const q = query(activitiesRef, where('userId', '==', userId));
-    const querySnapshot = await getDocs(q);
+        const dateStr = format(activity.timestamp, 'yyyy-MM-dd');
+        if (!activities[dateStr]) {
+          activities[dateStr] = [];
+        }
+        activities[dateStr].push(activity);
+      });
 
-    const activities: ActivityLog = {};
-    querySnapshot.forEach((doc) => {
-      const activity = {
-        ...doc.data(),
-        id: doc.id,
-        timestamp: new Date(doc.data().timestamp.seconds * 1000)
-      } as Activity;
-
-      const dateStr = format(activity.timestamp, 'yyyy-MM-dd');
-      if (!activities[dateStr]) {
-        activities[dateStr] = [];
-      }
-      activities[dateStr].push(activity);
-    });
-
-    setActivityLog(activities);
+      setActivityLog(activities);
+    } catch (error) {
+      console.error("Error loading activities:", error);
+    }
   };
+
 
   const handleAddActivity = async (type: ActivityType, description: string, duration: number | null) => {
     if (!user) return;
+    const activityLogPath = `users/${user.uid}/activityLog`;
+    const activitiesRef = collection(db, activityLogPath);
 
     const newActivity: Omit<Activity, 'id'> = {
       type,
-      timestamp: new Date(),
+      timestamp: Timestamp.now(),
       description,
       duration: duration ? duration : null,
       userId: user.uid
     };
-    const docRef = collection(db, 'users', user.uid, 'activityLog'); // Assuming currentUser is available
-    await addDoc(docRef, { type, description, duration, userId: user.uid });
+
+    const docRef = await addDoc(activitiesRef, newActivity);
 
     const activity = { ...newActivity, id: docRef.id } as Activity;
 
     setActivityLog((prev) => ({
       ...prev,
-      [selectedDateStr]: [...(prev[selectedDateStr] || []), activity],
+      [selectedDateStr]: [...(prev[selectedDateStr] || []), { ...activity, timestamp: activity.timestamp.toDate() }],
     }));
   };
 
   const handleDeleteActivity = async (id: string) => {
     if (!user) return;
+    const activityLogPath = `users/${user.uid}/activityLog`;
+    const activitiesRef = collection(db, activityLogPath, id);
 
-    await deleteDoc(doc(db, 'activities', id));
+    await deleteDoc(doc(activitiesRef));
     setActivityLog((prev) => ({
       ...prev,
       [selectedDateStr]: prev[selectedDateStr].filter((activity) => activity.id !== id),

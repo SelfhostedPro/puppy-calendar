@@ -1,11 +1,11 @@
 import React from 'react';
 import ReactCalendar from 'react-calendar';
 import { format } from 'date-fns';
-import { Activity } from '../types';
+import { Activity, ReadActivity } from '../types';
 import 'react-calendar/dist/Calendar.css';
 
 interface CalendarViewProps {
-  activities: { [date: string]: Activity[] };
+  activities: { [date: string]: ReadActivity[] };
   onDateSelect: (date: Date) => void;
   selectedDate: Date;
 }
@@ -37,7 +37,7 @@ export default function CalendarView({ activities, onDateSelect, selectedDate }:
   return (
     <div className="calendar-wrapper">
       <ReactCalendar
-        onChange={onDateSelect}
+        onChange={(e) => onDateSelect(e as Date)}
         value={selectedDate}
         tileContent={tileContent}
         className="rounded-lg shadow-md border-0"

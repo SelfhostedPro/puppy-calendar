@@ -1,19 +1,19 @@
 import React from 'react';
 import { format } from 'date-fns';
-import { Activity } from '../types';
-import { 
-  UtensilsCrossed, 
-  Droplets, 
-  Biohazard, 
-  GlassWater, 
-  Pill, 
-  Footprints, 
+import { Activity, ReadActivity } from '../types';
+import {
+  UtensilsCrossed,
+  Droplets,
+  Biohazard,
+  GlassWater,
+  Pill,
+  Footprints,
   Brain,
   Clock
 } from 'lucide-react';
 
 interface ActivityListProps {
-  activities: Activity[];
+  activities: ReadActivity[];
   onDelete: (id: string) => void;
 }
 
