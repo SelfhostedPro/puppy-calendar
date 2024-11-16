@@ -3,7 +3,7 @@ import { PlusCircle } from 'lucide-react';
 import { ActivityType } from '../types';
 
 interface ActivityFormProps {
-  onSubmit: (type: ActivityType, description: string, duration?: number) => void;
+  onSubmit: (type: ActivityType, description: string, duration: number | null) => void;
 }
 
 export default function ActivityForm({ onSubmit }: ActivityFormProps) {
@@ -13,7 +13,7 @@ export default function ActivityForm({ onSubmit }: ActivityFormProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(type, description, duration ? parseInt(duration) : undefined);
+    onSubmit(type, description, duration ? parseInt(duration) : null);
     setDescription('');
     setDuration('');
   };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { Dog } from 'lucide-react';
-import { collection, query, where, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, deleteDoc, doc, orderBy } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import ActivityForm from './components/ActivityForm';
 import ActivityList from './components/ActivityList';
@@ -30,10 +30,16 @@ function App() {
   }, []);
 
   const loadActivities = async (userId: string) => {
-    const activitiesRef = collection(db, 'activities');
-    const q = query(activitiesRef, where('userId', '==', userId));
+    const activitiesRef = collection(db, 'users', userId, 'activityLog');
+
+    // const activitiesRef = collection(db, 'activities');
+    const q = query(activitiesRef, orderBy('createdAt', 'desc'));
+
+
+
+    // const q = query(activitiesRef, where('userId', '==', userId));
     const querySnapshot = await getDocs(q);
-    
+
     const activities: ActivityLog = {};
     querySnapshot.forEach((doc) => {
       const activity = {
@@ -41,7 +47,7 @@ function App() {
         id: doc.id,
         timestamp: new Date(doc.data().timestamp.seconds * 1000)
       } as Activity;
-      
+
       const dateStr = format(activity.timestamp, 'yyyy-MM-dd');
       if (!activities[dateStr]) {
         activities[dateStr] = [];
@@ -52,7 +58,7 @@ function App() {
     setActivityLog(activities);
   };
 
-  const handleAddActivity = async (type: ActivityType, description: string, duration?: number) => {
+  const handleAddActivity = async (type: ActivityType, description: string, duration: number | null) => {
     if (!user) return;
 
     const newActivity: Omit<Activity, 'id'> = {
@@ -62,8 +68,9 @@ function App() {
       duration: duration ? duration : null,
       userId: user.uid
     };
+    const docRef = collection(db, 'users', user.uid, 'activityLog'); // Assuming currentUser is available
+    await addDoc(docRef, { type, description, duration, userId: user.uid });
 
-    const docRef = await addDoc(collection(db, 'activities'), newActivity);
     const activity = { ...newActivity, id: docRef.id } as Activity;
 
     setActivityLog((prev) => ({
