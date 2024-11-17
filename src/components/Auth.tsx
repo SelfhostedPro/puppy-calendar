@@ -6,7 +6,7 @@ import {
   signOut,
 } from 'firebase/auth';
 import { LogIn, LogOut, UserPlus } from 'lucide-react';
-
+import { Button } from '@/components/ui/button';
 export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -40,15 +40,15 @@ export default function Auth() {
 
   if (auth.currentUser) {
     return (
-      <div className="flex items-center space-x-4">
-        <span className="text-sm text-gray-200">{auth.currentUser.email}</span>
-        <button
+      <div className="flex flex-col gap-2 items-center">
+        <Button
           onClick={handleSignOut}
-          className="inline-flex items-center px-3 py-1 border border-transparent text-sm rounded-md text-white bg-red-600 hover:bg-red-700"
+          className="items-center px-3 py-1 border border-transparent text-sm rounded-md text-white bg-red-600 hover:bg-red-700"
         >
           <LogOut className="w-4 h-4 mr-1" />
           Sign Out
-        </button>
+        </Button>
+        <span className="text-sm text-gray-200">{auth.currentUser.email}</span>
       </div>
     );
   }
