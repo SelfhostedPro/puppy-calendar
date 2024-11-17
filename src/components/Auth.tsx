@@ -55,6 +55,13 @@ export default function Auth() {
 
   return (
     <form onSubmit={handleAuth} className="flex flex-col gap-2 items-center">
+      <button
+        type="button"
+        onClick={() => setIsSignUp(!isSignUp)}
+        className="text-blue-200 text-sm hover:text-white"
+      >
+        {isSignUp ? 'Have an account? Login' : 'Need an account? Sign Up'}
+      </button>
       <input
         type="email"
         value={email}
@@ -95,13 +102,7 @@ export default function Auth() {
         )}
         {isSignUp ? 'Sign Up' : 'Login'}
       </button>
-      <button
-        type="button"
-        onClick={() => setIsSignUp(!isSignUp)}
-        className="text-blue-200 text-sm hover:text-white"
-      >
-        {isSignUp ? 'Have an account? Login' : 'Need an account? Sign Up'}
-      </button>
+
       {error && <p className="text-red-400 text-sm">{error}</p>}
     </form>
   );
