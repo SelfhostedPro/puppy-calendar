@@ -58,6 +58,7 @@ export default function Auth() {
       <input
         type="email"
         value={email}
+        autoComplete='email'
         onChange={(e) => setEmail(e.target.value)}
         placeholder="Email"
         className="px-2 py-2 w-full rounded text-gray-900 text-sm"
@@ -68,6 +69,7 @@ export default function Auth() {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         placeholder="Password"
+        autoComplete='current-password'
         className="px-2 py-2 w-full rounded text-gray-900 text-sm"
         required
       />
@@ -76,6 +78,7 @@ export default function Auth() {
           type="password"
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
+          autoComplete='confirm-password'
           placeholder="confirm"
           className="px-2 py-2 w-full rounded text-gray-900 text-sm"
           required
